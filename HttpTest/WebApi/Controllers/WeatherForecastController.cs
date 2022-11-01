@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
+using WebApi.Services;
 
 namespace WebApi.Controllers;
 
@@ -36,9 +37,13 @@ public class WeatherForecastController : ControllerBase {
     ///     </para>
     /// </summary>
     /// <param name="data"></param>
+    /// <param name="singletonService">×¢Èë·þÎñ</param>
     /// <returns></returns>
     [HttpPost]
-    public string Post([FromBody] string data) {
-        return $"{data} {DateTime.Now.ToString(CultureInfo.InvariantCulture)}";
+    public string Post([FromBody] string data, [FromServices] SingletonService singletonService) {
+        var str =
+            $"{singletonService.AddOne()} {data} {DateTime.Now.ToString(CultureInfo.InvariantCulture)}";
+        _logger.LogInformation(str);
+        return str;
     }
 }
