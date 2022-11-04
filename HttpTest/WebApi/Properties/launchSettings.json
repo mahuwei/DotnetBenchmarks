@@ -1,15 +1,24 @@
-﻿{
-  "$schema": "https://json.schemastore.org/launchsettings.json",
+{
   "profiles": {
     "WebApi": {
       "commandName": "Project",
-      "dotnetRunMessages": true,
       "launchBrowser": true,
       "launchUrl": "swagger",
-      "applicationUrl": "http://localhost:5186",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      }
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5186"
+    },
+    "Docker": {
+      "commandName": "Docker",
+      "launchBrowser": true,
+      "launchUrl": "{Scheme}://127.0.0.1:{ServicePort}/swagger",
+      "publishAllPorts": true,
+      "httpPort": 5186,
+      "useSSL": false,
+      "sslPort": 5001
     }
-  }
+  },
+  "$schema": "https://json.schemastore.org/launchsettings.json"
 }

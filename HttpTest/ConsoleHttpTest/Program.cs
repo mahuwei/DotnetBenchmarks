@@ -1,39 +1,55 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using System.Diagnostics;
-using BenchmarkDotNet.Running;
 using Microsoft.Extensions.DependencyInjection;
 
 Console.Title = "Get web api test";
 Console.WriteLine();
 var serviceCollection = new ServiceCollection();
-serviceCollection.AddHttpClient("default", options => {
-    options.BaseAddress = new Uri("http://localhost:5186");
-});
+serviceCollection.AddHttpClient("default",
+    options => { options.BaseAddress = new Uri("http://192.168.1.200:5186"); }
+//options => { options.BaseAddress = new Uri("http://192.168.1.51:5186"); }
+);
 var serviceProvider = serviceCollection.BuildServiceProvider();
 HttpGetTest.ServiceProvider = serviceProvider;
+var foregroundColor = Console.ForegroundColor;
 
-Console.WriteLine("按任意键开始测试...");
-Console.ReadKey();
-var stopwatch = new Stopwatch();
-var count = 10000;
-var tasks = new List<Task>();
-stopwatch.Start();
-for (int i = 0; i < count; i++){
-    var no = i;
-    var task = Task.Run(() => GetAsync(no));
-    if(no % 100 == 0){
-        Thread.Sleep(10);
+do{
+    Console.WriteLine(" => 输入运行次数(exit 退出)...");
+    var input = Console.ReadLine();
+    if(string.IsNullOrWhiteSpace(input)) continue;
+
+    if(input.ToLower() == "exit") break;
+
+    if(int.TryParse(input, out var count) == false){
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine(" => 输入错误：{0}", input);
+        Console.ForegroundColor = foregroundColor;
+        continue;
     }
-    tasks.Add(task);
-}
 
-Task.WaitAll(tasks.ToArray());
-stopwatch.Stop();
-Console.WriteLine($"运行次数:{count}, 时长:{stopwatch.ElapsedMilliseconds / 1000}");
-//BenchmarkRunner.Run<HttpGetTest>();
+    var stopwatch = new Stopwatch();
+    var tasks = new List<Task>();
+    stopwatch.Start();
+    for(var i = 0; i < count; i++){
+        var no = i;
+        var task = Task.Run(() => GetAsync(no));
+        if(no % 100 == 0) Thread.Sleep(10);
+        tasks.Add(task);
+    }
 
-Console.WriteLine("测试完成，按任意键退出。");
+    try{
+        Task.WaitAll(tasks.ToArray());
+    }
+    catch(AggregateException ex){
+        Console.WriteLine($" => 执行报错，错误数量:{ex.InnerExceptions.Count}");
+    }
+
+    stopwatch.Stop();
+    Console.WriteLine($" => 运行次数:{count}, 时长:{stopwatch.ElapsedMilliseconds / 1000}");
+} while(true);
+
+Console.WriteLine(" => 测试完成，按任意键退出。");
 Console.ReadKey();
 
 
@@ -43,5 +59,5 @@ async Task GetAsync(int no) {
     var httpResponseMessage = await httpClient.GetAsync("/WeatherForecast");
     httpResponseMessage.EnsureSuccessStatusCode();
     await httpResponseMessage.Content.ReadAsStringAsync();
-    Console.WriteLine($"run time:{no}");
+    Console.WriteLine($" => run time:{no}");
 }
