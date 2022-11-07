@@ -1,3 +1,5 @@
+using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Serilog;
 using Serilog.Events;
 using Serilog.Extensions.Logging;
@@ -28,6 +30,7 @@ builder.WebHost.ConfigureKestrel(serverOptions => {
     serverOptions.Limits.MaxConcurrentUpgradedConnections = 1000;
     serverOptions.DisableStringReuse = true;
 });
+
 builder.Services.AddSingleton<ILoggerFactory>(_ => new SerilogLoggerFactory(Log.Logger));
 // Add services to the container.
 builder.Services.AddControllers();
