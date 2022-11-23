@@ -17,7 +17,7 @@ public class UsersController : ControllerBase {
     [HttpGet]
     public async Task<IEnumerable<User>> GetAsync() {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-        var users = await dbContext.Users.ToListAsync();
+        var users = await dbContext.Users.Include(d => d.Company).AsNoTracking().ToListAsync();
         return users;
     }
 
@@ -26,8 +26,18 @@ public class UsersController : ControllerBase {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
         var user = await dbContext.Users.AsNoTracking().FirstOrDefaultAsync(d => d.Name == name);
         if(user != null) return user;
-        user = new User { Id = Guid.NewGuid(), Name = name, Age = age };
+        var company = await GetCompanyAsync(dbContext);
+        user = new User { Id = Guid.NewGuid(), Name = name, Age = age, CompanyId = company.Id };
         var entityEntry = await dbContext.Users.AddAsync(user);
+        await dbContext.SaveChangesAsync();
+        return entityEntry.Entity;
+    }
+
+    private async Task<Company> GetCompanyAsync(DemoDbContext dbContext) {
+        var company = await dbContext.Companies.FirstOrDefaultAsync();
+        if(company != null) return company;
+        company = new Company { Id = Guid.NewGuid(), No = "C001", Name = "µÚÒ»¼Ò" };
+        var entityEntry = await dbContext.Companies.AddAsync(company);
         await dbContext.SaveChangesAsync();
         return entityEntry.Entity;
     }

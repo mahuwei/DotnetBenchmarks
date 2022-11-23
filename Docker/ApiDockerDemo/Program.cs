@@ -16,7 +16,10 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddPooledDbContextFactory<DemoDbContext>(options => {
     var connectionString = configurationRoot.GetConnectionString("Default");
     Console.WriteLine(connectionString);
-    options.UseSqlServer(connectionString!);
+    options.UseSqlServer(connectionString!,
+        sqlServerOptions => {
+            sqlServerOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+        });
 });
 
 var app = builder.Build();

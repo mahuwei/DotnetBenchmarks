@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ApiDockerDemo.Migrations
 {
     [DbContext(typeof(DemoDbContext))]
-    [Migration("20221104072042_initialization")]
-    partial class initialization
+    [Migration("20221107024830_Initialization")]
+    partial class Initialization
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -24,6 +24,27 @@ namespace ApiDockerDemo.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
+            modelBuilder.Entity("ApiDockerDemo.Models.Company", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("No")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Companies");
+                });
+
             modelBuilder.Entity("ApiDockerDemo.Models.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -33,6 +54,9 @@ namespace ApiDockerDemo.Migrations
                     b.Property<int>("Age")
                         .HasColumnType("int");
 
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(30)
@@ -40,7 +64,20 @@ namespace ApiDockerDemo.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CompanyId");
+
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("ApiDockerDemo.Models.User", b =>
+                {
+                    b.HasOne("ApiDockerDemo.Models.Company", "Company")
+                        .WithMany()
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Company");
                 });
 #pragma warning restore 612, 618
         }
